@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Personal Portfolio</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .main-wrapper {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+
+    .page-title {
+      margin-top: 0;
+      margin-bottom: 30px;
+      color: #2d3748;
+      font-size: 2.5em;
+      text-align: center;
+      border-bottom: 3px solid #667eea;
+      padding-bottom: 15px;
+    }
+
+    .action-button {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 600;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .action-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+
+    .action-button:active {
+      transform: translateY(0);
+    }
+
+    .text-input {
+      padding: 10px 14px;
+      margin-right: 10px;
+      border-radius: 6px;
+      border: 2px solid #e2e8f0;
+      font-size: 14px;
+      transition: border-color 0.3s;
+      min-width: 200px;
+    }
+
+    .text-input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .info-section {
+      margin: 20px 0;
+      padding: 15px 0;
+    }
+
+    .section-label {
+      font-weight: 700;
+      color: #4a5568;
+      margin-bottom: 8px;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .section-value {
+      color: #2d3748;
+      font-size: 16px;
+      line-height: 1.6;
+    }
+
+    .skill-tags {
+      margin-top: 8px;
+    }
+
+    .skill-tags span {
+      display: inline-block;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 6px 14px;
+      border-radius: 20px;
+      margin: 4px 6px 4px 0;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .project-list {
+      background: #f7fafc;
+      padding: 15px 20px;
+      border-radius: 8px;
+      margin-top: 8px;
+      border-left: 4px solid #667eea;
+    }
+
+    .project-list ul {
+      margin-left: 20px;
+    }
+
+    .project-list li {
+      margin: 8px 0;
+      color: #4a5568;
+    }
+
+    .error-message {
+      color: #e53e3e;
+      background: #fff5f5;
+      padding: 12px;
+      border-radius: 6px;
+      margin-top: 15px;
+      border-left: 4px solid #e53e3e;
+    }
+
+    .search-container {
+      margin-top: 30px;
+      padding: 20px;
+      background: #edf2f7;
+      border-radius: 10px;
+      border: 2px solid #cbd5e0;
+    }
+
+    .search-header {
+      font-size: 18px;
+      font-weight: 600;
+      color: #2d3748;
+      margin-bottom: 15px;
+    }
+
+    .link-item {
+      margin: 8px 0;
+    }
+
+    .link-item a {
+      color: #667eea;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .link-item a:hover {
+      color: #764ba2;
+      text-decoration: underline;
+    }
+
+    .loading-state {
+      text-align: center;
+      padding: 30px;
+      color: #718096;
+      font-style: italic;
+    }
+
+    #profileDisplay {
+      margin-top: 30px;
+    }
+
+    .search-results {
+      margin-top: 15px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="main-wrapper">
+    <h1 class="page-title">Personal Portfolio</h1>
+
+    <button class="action-button" onclick="fetchProfileData()">Load My Profile</button>
+
+    <!-- Project Search Section -->
+    <div class="search-container">
+      <div class="search-header">🔍 Search Projects by Skill</div>
+      <input 
+        id="skillInput" 
+        class="text-input" 
+        placeholder="e.g. python, fastapi, react" 
+      />
+      <button class="action-button" onclick="searchProjectsBySkill()">Search</button>
+      <div id="searchResults" class="search-results"></div>
+    </div>
+
+    <div id="profileDisplay"></div>
+  </div>
+
+  <script>
+    async function fetchProfileData() {
+      const displayArea = document.getElementById("profileDisplay");
+      displayArea.innerHTML = '<div class="loading-state">Loading your profile...</div>';
+
+      try {
+        const response = await fetch("/profile");
+        const profileData = await response.json();
+
+        if (profileData.error) {
+          displayArea.innerHTML = `<div class="error-message">${profileData.error}</div>`;
+          return;
+        }
+
+        if (profileData.message) {
+          displayArea.innerHTML = `<div class="error-message">${profileData.message}</div>`;
+          return;
+        }
+
+        const skillBadges = profileData.technical_skills
+          ? profileData.technical_skills.split(",").map(s => `<span>${s.trim()}</span>`).join("")
+          : "";
+
+        const projectItems = profileData.project_portfolio
+          ? profileData.project_portfolio.split("\n").filter(p => p.trim()).map(p => `<li>${p}</li>`).join("")
+          : "";
+
+        const linkElements = profileData.social_links
+          ? profileData.social_links.split(",").map(link =>
+              `<div class="link-item"><a href="https://${link.trim()}" target="_blank" rel="noopener noreferrer">🔗 ${link.trim()}</a></div>`
+            ).join("")
+          : "";
+
+        displayArea.innerHTML = `
+          <div class="info-section">
+            <div class="section-label">Full Name</div>
+            <div class="section-value">${profileData.full_name}</div>
+          </div>
+
+          <div class="info-section">
+            <div class="section-label">Email Address</div>
+            <div class="section-value">${profileData.email_address}</div>
+          </div>
+
+          <div class="info-section">
+            <div class="section-label">Education</div>
+            <div class="section-value">${profileData.educational_background}</div>
+          </div>
+
+          <div class="info-section">
+            <div class="section-label">Technical Skills</div>
+            <div class="skill-tags">${skillBadges}</div>
+          </div>
+
+          <div class="info-section">
+            <div class="section-label">Project Portfolio</div>
+            <div class="project-list"><ul>${projectItems}</ul></div>
+          </div>
+
+          <div class="info-section">
+            <div class="section-label">Social Links</div>
+            ${linkElements}
+          </div>
+        `;
+      } catch (error) {
+        displayArea.innerHTML = `<div class="error-message">Failed to load profile. Please try again.</div>`;
+        console.error("Error fetching profile:", error);
+      }
+    }
+
+    async function searchProjectsBySkill() {
+      const skillQuery = document.getElementById("skillInput").value;
+      const resultsArea = document.getElementById("searchResults");
+
+      if (!skillQuery.trim()) {
+        resultsArea.innerHTML = `<div class="error-message">Please enter a skill to search</div>`;
+        return;
+      }
+
+      try {
+        const response = await fetch(`/projects?skill=${encodeURIComponent(skillQuery)}`);
+        const projectData = await response.json();
+
+        if (!projectData || projectData.length === 0) {
+          resultsArea.innerHTML = `
+            <div class="info-section">
+              <div class="section-label">Search Results for "${skillQuery}"</div>
+              <div class="project-list">No matching projects found</div>
+            </div>
+          `;
+        } else {
+          resultsArea.innerHTML = `
+            <div class="info-section">
+              <div class="section-label">Search Results for "${skillQuery}"</div>
+              <div class="project-list">${projectData}</div>
+            </div>
+          `;
+        }
+      } catch (error) {
+        resultsArea.innerHTML = `<div class="error-message">Search failed. Please try again.</div>`;
+        console.error("Error searching projects:", error);
+      }
+    }
+  </script>
+</body>
+</html>

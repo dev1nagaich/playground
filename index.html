@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>My Profile</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f7fa;
+      margin: 0;
+      padding: 40px;
+    }
+
+    .container {
+      max-width: 750px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      margin-top: 0;
+      color: #333;
+    }
+
+    button {
+      padding: 10px 16px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    button:hover {
+      background: #1e40af;
+    }
+
+    input {
+      padding: 8px;
+      margin-right: 8px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    .field {
+      margin: 14px 0;
+    }
+
+    .label {
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 4px;
+    }
+
+    .skills span {
+      display: inline-block;
+      background: #e0e7ff;
+      color: #1e3a8a;
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin: 4px 4px 0 0;
+      font-size: 12px;
+    }
+
+    .projects {
+      background: #f9fafb;
+      padding: 10px;
+      border-radius: 4px;
+      margin-top: 5px;
+      font-size: 14px;
+    }
+
+    .error {
+      color: red;
+      margin-top: 10px;
+    }
+
+    .search-box {
+      margin-top: 20px;
+      padding: 15px;
+      background: #f1f5f9;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>My Profile</h1>
+
+    <button onclick="loadProfile()">Load Profile</button>
+
+    <!-- Search Section -->
+    <div class="search-box">
+      <div class="label">Search Projects by Skill</div>
+      <input id="skill" placeholder="e.g. python" />
+      <button onclick="searchProjects()">Search</button>
+      <div id="searchResult"></div>
+    </div>
+
+    <div id="content"></div>
+  </div>
+
+  <script>
+    async function loadProfile() {
+      const content = document.getElementById("content");
+      content.innerHTML = "Loading...";
+
+      try {
+        const res = await fetch("/profile");
+        const data = await res.json();
+
+        if (data.error) {
+          content.innerHTML = `<div class="error">${data.error}</div>`;
+          return;
+        }
+
+        const skills = data.skills
+          ? data.skills.split(",").map(s => `<span>${s.trim()}</span>`).join("")
+          : "";
+
+        const projects = data.projects
+          ? data.projects.split("\n").filter(p => p.trim()).map(p => `<li>${p}</li>`).join("")
+          : "";
+
+        const links = data.links
+          ? data.links.split(",").map(l =>
+              `<div><a href="https://${l.trim()}" target="_blank">${l.trim()}</a></div>`
+            ).join("")
+          : "";
+
+        content.innerHTML = `
+          <div class="field">
+            <div class="label">Name</div>
+            <div>${data.name}</div>
+          </div>
+
+          <div class="field">
+            <div class="label">Email</div>
+            <div>${data.email}</div>
+          </div>
+
+          <div class="field">
+            <div class="label">Education</div>
+            <div>${data.education}</div>
+          </div>
+
+          <div class="field">
+            <div class="label">Skills</div>
+            <div class="skills">${skills}</div>
+          </div>
+
+          <div class="field">
+            <div class="label">Projects</div>
+            <div class="projects"><ul>${projects}</ul></div>
+          </div>
+
+          <div class="field">
+            <div class="label">Links</div>
+            ${links}
+          </div>
+        `;
+      } catch (err) {
+        content.innerHTML = `<div class="error">Failed to load profile</div>`;
+      }
+    }
+
+    async function searchProjects() {
+      const skill = document.getElementById("skill").value;
+      const result = document.getElementById("searchResult");
+
+      if (!skill) {
+        result.innerHTML = `<div class="error">Please enter a skill</div>`;
+        return;
+      }
+
+      try {
+        const res = await fetch(`/projects?skill=${skill}`);
+        const data = await res.json();
+
+        result.innerHTML = `
+          <div class="field">
+            <div class="label">Search Result</div>
+            <div class="projects">${data || "No matching projects found"}</div>
+          </div>
+        `;
+      } catch {
+        result.innerHTML = `<div class="error">Search failed</div>`;
+      }
+    }
+  </script>
+</body>
+</html>

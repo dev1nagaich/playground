@@ -1,0 +1,31 @@
+# -------- Python --------
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# -------- Virtual Environment --------
+venv/
+.env/
+
+# -------- Database --------
+*.db
+*.sqlite3
+
+# -------- OS / Editor --------
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# -------- Logs --------
+*.log
+
+# -------- Testing / Coverage --------
+.coverage
+htmlcov/
+
+# -------- Build --------
+dist/
+build/
+*.egg-info/
